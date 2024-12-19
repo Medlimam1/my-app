@@ -4,12 +4,12 @@ workflows:
     max_build_duration: 60
     environment:
       vars:
-        - PROJECT_PATH: "medlimame.xcodeproj"  # اسم المشروع الخاص بك
-        - SCHEME: "my-app"  # اسم الـ Scheme الذي تستخدمه
-        - EXPORT_METHOD: "development"  # تحديد طريقة التوزيع (يمكن أن تكون "app-store" أو "ad-hoc" أو "development")
+        PROJECT_PATH: "medlimame.xcodeproj"  # اسم المشروع الخاص بك
+        SCHEME: "my-app"  # اسم الـ Scheme الذي تستخدمه
+        EXPORT_METHOD: "development"  # تحديد طريقة التوزيع (يمكن أن تكون "app-store" أو "ad-hoc" أو "development")
     steps:
       # Step 1: Check out the code from the repository
-      - checkout:
+      - checkout
 
       # Step 2: Install dependencies (if you are using CocoaPods)
       - run:
