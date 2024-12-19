@@ -8,17 +8,14 @@ workflows:
         SCHEME: "my-app"  # اسم الـ Scheme الذي تستخدمه
         EXPORT_METHOD: "development"  # تحديد طريقة التوزيع (يمكن أن تكون "app-store" أو "ad-hoc" أو "development")
     steps:
-      # Step 1: Check out the code from the repository
-      - checkout
-
-      # Step 2: Install dependencies (if you are using CocoaPods)
+      # Step 1: Install dependencies (if you are using CocoaPods)
       - run:
           name: Install CocoaPods dependencies
           command: |
             gem install cocoapods
             pod install
 
-      # Step 3: Build the app using Xcode
+      # Step 2: Build the app using Xcode
       - xcode-build:
           project: "$PROJECT_PATH"
           scheme: "$SCHEME"
@@ -26,7 +23,7 @@ workflows:
           export_method: "$EXPORT_METHOD"
           xcargs: "-allowProvisioningUpdates"
 
-      # Step 4: Upload the .ipa to Codemagic artifacts
+      # Step 3: Upload the .ipa to Codemagic artifacts
       - upload-artifact:
           path: "build/ios/ipa/YourApp.ipa"  # استبدل بالمسار الفعلي لـ .ipa
           name: app-ipa
