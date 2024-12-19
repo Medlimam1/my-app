@@ -1,0 +1,112 @@
+// ReviewScheduleApp.swift
+import SwiftUI
+import UserNotifications
+
+@main
+struct ReviewScheduleApp: App {
+    init() {
+        configureNotifications()
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
+
+func configureNotifications() {
+    let center = UNUserNotificationCenter.current()
+    center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+        if granted {
+            scheduleDailyNotifications()
+        }
+    }
+}
+
+func scheduleDailyNotifications() {
+    let center = UNUserNotificationCenter.current()
+    let content = UNMutableNotificationContent()
+    content.title = "تذكير المراجعة"
+    content.body = "لا تنسَ مراجعة المواد المحددة اليوم!"
+    content.sound = .default
+
+    var dateComponents = DateComponents()
+    dateComponents.hour = 16 // إشعار في الساعة 4 مساءً
+
+    let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+    let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+
+    center.add(request)
+}
+
+// ContentView.swift
+struct ContentView: View {
+    @State private var reviewSchedule: [ReviewItem] = ReviewItem.sampleData
+
+    var totalHours: Int {
+        reviewSchedule.reduce(0) { $0 + $1.hours }
+    }
+
+    var hoursRemaining: Int {
+        reviewSchedule.reduce(0) { $0 + $1.remainingHours }
+    }
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                List {
+                    ForEach(reviewSchedule) { item in
+                        VStack(alignment: .leading) {
+                            Text(item.subject)
+                                .font(.headline)
+                            Text("الساعات المخصصة: \(item.hours) ساعة")
+                                .font(.subheadline)
+                            Text("المهام: \(item.tasks)")
+                                .font(.subheadline)
+                            Text("الوقت المتبقي: \(item.remainingHours) ساعة")
+                                .foregroundColor(.red)
+                        }
+                        .padding()
+                    }
+                }
+                .navigationTitle("جدول المراجعة")
+
+                VStack {
+                    Text("إحصائيات المراجعة")
+                        .font(.title2)
+                        .padding()
+                    Text("إجمالي الساعات: \(totalHours) ساعة")
+                    Text("الوقت المتبقي اليوم: \(hoursRemaining) ساعة")
+                        .foregroundColor(hoursRemaining > 0 ? .green : .red)
+                }
+                .padding()
+            }
+        }
+    }
+}
+
+// ReviewItem.swift
+struct ReviewItem: Identifiable {
+    let id = UUID()
+    var subject: String
+    var hours: Int
+    var tasks: String
+    var remainingHours: Int {
+        let currentDate = Date()
+        let calendar = Calendar.current
+        let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: currentDate)!
+        let hoursRemaining = calendar.dateComponents([.hour], from: currentDate, to: endOfDay).hour ?? 0
+        return max(0, hoursRemaining)
+    }
+}
+
+// Sample Data Extension
+extension ReviewItem {
+    static let sampleData: [ReviewItem] = [
+        ReviewItem(subject: "Systèmes embarqués", hours: 4, tasks: "قراءة المحاضرات وتلخيص المفاهيم الأساسية"),
+        ReviewItem(subject: "Systèmes énergétiques autonomes", hours: 4, tasks: "مراجعة النظريات + حل تمارين بسيطة"),
+        ReviewItem(subject: "Systèmes Temps Réel", hours: 4, tasks: "فهم المعادلات والعمل على الأمثلة العملية"),
+        ReviewItem(subject: "Réseaux et communications industriels", hours: 4, tasks: "مراجعة المفاهيم الأساسية + التمارين")
+    ]
+}
