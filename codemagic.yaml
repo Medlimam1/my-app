@@ -1,1 +1,45 @@
+workflows:
+  ios:
+    name: iOS Workflow
+    max_build_duration: 60
+    steps:
+      # Step 1: Check out the code from the repository
+      - checkout:
+          fetch_depth: 1  # Optional: to avoid fetching too many commit history
+
+      # Step 2: Install dependencies (if you have any)
+      - run:
+          name: Install dependencies
+          command: |
+            sudo gem install cocoapods
+            pod install  # If your project uses CocoaPods to manage dependencies
+
+      # Step 3: Set up the environment
+      - run:
+          name: Set up environment
+          command: |
+            echo "Setting up environment variables"  # Optional
+
+      # Step 4: Build the iOS app
+      - flutter-build:  # You can remove this if you're not using Flutter.
+          ios:
+            build_mode: release
+            export_method: app-store  # Choose app-store, ad-hoc, enterprise, or development
+            export_xcargs: "-allowProvisioningUpdates"  # Allow automatic provisioning for new profiles
+
+      # Step 5: Build the app using Xcode
+      - xcode-build:
+          project: "YourProject.xcodeproj"  # Replace with your Xcode project file
+          scheme: "YourScheme"  # Replace with the correct scheme name
+          configuration: "Release"
+          export_method: app-store  # Can be 'app-store', 'ad-hoc', 'enterprise', or 'development'
+
+      # Step 6: Upload to TestFlight or create .ipa
+      - upload-to-app-store:
+          api_key: $APP_STORE_CONNECT_API_KEY  # If you want to upload to App Store directly
+
+      - upload-artifact:
+          path: "build/ios/ipa"  # This path should match the output folder of your .ipa file
+          name: app-ipa
+          type: ipa
 
